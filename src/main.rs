@@ -673,6 +673,53 @@ fn extract_length_prefixed_nals(
     let mut i = 0usize;
 
     while i + 4 <= region.len() {
+        // --- CAMERA HEURISTICS ---
+        if let Some(Template::GoPro4) = options.template {
+            let tag = &region[i..i + 4];
+            // Identify GoPro GPMF metadata chunks (DEVC, DVID, STRM) and skip them
+            if tag == b"DEVC" || tag == b"DVID" || tag == b"STRM" || tag == b"RMRK" || tag == b"TYPE" {
+                if i + 8 <= region.len() {
+                    let word1 = u32::from_be_bytes([region[i+4], region[i+5], region[i+6], region[i+7]]);
+                    let chunk_len = (word1 & 0x0000_ffff) as usize + 8;
+                    i += chunk_len;
+                    continue;
+                }
+            }
+            // Identify GoPro FDSC recovery blocks ("GP")
+            if tag[0] == b'G' && tag[1] == b'P' {
+                // Approximate fdsc skip (usually 16 or 152 bytes, we'll try a minimal skip)
+                i += 16;
+                continue;
+            }
+        }
+        // -------------------------
+
+        // --- GENERIC METADATA HEURISTICS ---
+        // TMCD: Timecode tracks (often 4 bytes payload)
+        if region.len() >= i + 8 {
+            let tag = &region[i + 4..i + 8];
+            if tag == b"tmcd" {
+                i += 12; // 4 (size) + 4 (tag) + 4 (payload)
+                continue;
+            }
+        }
+        
+        // CAMM: Camera Metadata (Google Street View, Insta360, etc.)
+        if region.len() >= i + 8 {
+            let tag = &region[i + 4..i + 8];
+            if tag == b"camm" {
+                if i + 10 <= region.len() {
+                    let type_val = (region[i + 8] as u16) | ((region[i + 9] as u16) << 8);
+                    let lengths = [4, 12, 16, 28, 4, 4, 8, 4];
+                    if (type_val as usize) < lengths.len() {
+                        i += lengths[type_val as usize] + 8;
+                        continue;
+                    }
+                }
+            }
+        }
+        // -------------------------
+
         let size = u32::from_be_bytes([region[i], region[i + 1], region[i + 2], region[i + 3]])
             as usize;
 

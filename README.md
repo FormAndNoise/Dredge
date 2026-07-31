@@ -62,4 +62,11 @@ rustore_mp4 in_corrupted.mp4 out_video.h264 out_audio.aac [options]
 ---
 
 ## 📜 Credits & Background
-Built upon the reverse-engineering principles of the original closed-source `recover_mp4` utility (v1.92). The Rust implementation provides modern memory safety, incredible parsing speed, and true cross-platform compatibility, ensuring these critical archival and recovery techniques are preserved.
+Built upon the reverse-engineering principles of the original closed-source `recover_mp4` utility (v1.92) by Dmitry Vasilyev. 
+
+**Special Acknowledgments:**
+A massive thank you to the open-source heroes who did the hard reverse-engineering work that makes our camera-specific parsing rules possible:
+- **Federico Ponchio** for creating the incredible [`untrunc`](https://github.com/ponchio/untrunc) tool, which provided the mathematical blueprint for parsing GoPro (`gpmd`, `fdsc`), Timecode (`tmcd`), and Camera Metadata (`camm`) chunks.
+- **anthwlock** for maintaining and expanding the highly successful [`untrunc` fork](https://github.com/anthwlock/untrunc) which served as the primary reference for maximizing camera compatibility.
+
+The Rust implementation provides modern memory safety, incredible parsing speed, and true cross-platform compatibility, ensuring these critical archival and recovery techniques are preserved in an open, unified ecosystem.
