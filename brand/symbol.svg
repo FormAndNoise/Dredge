@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Top Attachment Eye Ring -->
+  <circle cx="12" cy="4.5" r="1.5" />
+  <!-- Central Shank -->
+  <line x1="12" y1="6" x2="12" y2="19.5" />
+  <!-- Cross Stock -->
+  <line x1="7.5" y1="9" x2="16.5" y2="9" />
+  <!-- Radiating Curved Flukes -->
+  <path d="M 4.5 14 C 4.5 18.5, 8.5 20.5, 12 20.5 C 15.5 20.5, 19.5 18.5, 19.5 14" />
+  <!-- Left & Right Fluke Barbs -->
+  <line x1="4.5" y1="14" x2="3.5" y2="15.5" />
+  <line x1="19.5" y1="14" x2="20.5" y2="15.5" />
+  <!-- The Family Fingerprint: Solid Recovered Stream Pip Cradled in Right Hook -->
+  <circle cx="17" cy="12" r="1.3" fill="currentColor" stroke="none" />
+</svg>
