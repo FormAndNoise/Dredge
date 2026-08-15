@@ -1,7 +1,18 @@
 [package]
-name = "rustore_mp4"
-version = "1.92.0"
+name = "dredge"
+version = "0.1.0"
 edition = "2021"
+description = "Fast, memory-safe media recovery tool for unfinalized and damaged MP4/MOV video recordings."
+authors = ["Dredge Contributors"]
+license = "MIT OR Apache-2.0"
+
+[lib]
+name = "dredge"
+path = "src/lib.rs"
+
+[[bin]]
+name = "dredge"
+path = "src/main.rs"
 
 [profile.release]
 opt-level = 3

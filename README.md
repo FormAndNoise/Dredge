@@ -1,72 +1,77 @@
-# Rustore MP4
+# Dredge
 
 <p align="center">
-  <img src="Rustoremp4favicon.png" alt="Rustore MP4 Logo" width="200"/>
+  <img src="Rustoremp4favicon.png" alt="Dredge Logo" width="160"/>
 </p>
 
-**Rustore MP4** is a modern, unified application for recovering H.264/AVC and H.265/HEVC video streams and audio streams from corrupted or unfinalized MP4, MOV, and 3GP files. 
-
-This repository contains a full **cleanroom Rust rewrite** of the legendary `recover_mp4` utility (originally by Dmitry Vasilyev), fully integrated with a **Python-based Tkinter GUI wrapper** for ease of use. The entire stack can be compiled and bundled into a single standalone executable.
+**Dredge** is a fast, memory-safe media recovery tool for extracting valid H.264/AVC, H.265/HEVC video streams, and AAC/WAV/MP3 audio streams from corrupted, truncated, or unfinalized MP4 and MOV recordings.
 
 ---
 
-## 🚀 Unified Build System
+## ⚡ Key Highlights
 
-This repository is uniquely flattened and configured to be compiled into a single, unified `.exe` binary that contains both the Rust engine and the Python graphical interface.
-
-### Compiling the Unified Binary (Windows)
-
-Ensure you have **Rust/Cargo** and **Python 3.10+** installed on your system.
-
-1. Open PowerShell and navigate to the project directory.
-2. Run the build script:
-   ```powershell
-   .\build.ps1
-   ```
-3. The script will automatically:
-   - Compile the Rust engine using `cargo build --release`
-   - Use `PyInstaller` to seamlessly package the Python GUI, the `.ico` graphic, and the Rust engine into a single executable.
-4. Your finished standalone program will be output to the `dist/` directory!
+- **Recursive ISO BMFF Box Parser**: Recursively traverses nested atom structures (`moov` → `trak` → `mdia` → `minf` → `stbl` → `stsd` → `avc1`/`hvc1`) to accurately extract codec configuration records (`avcC`, `hvcC`, `esds`).
+- **Annex B Parameter Reconstruction**: Extracts SPS/PPS (for AVC) and VPS/SPS/PPS (for HEVC) from healthy reference files and injects Annex B start codes (`00 00 00 01`) so recovered video elementary streams decode properly in standard players.
+- **Synthesized ADTS Headers**: Converts raw AAC access units into standard ADTS audio frames using sample rate and channel configurations extracted from reference recordings.
+- **Memory-Safe Streaming Scanner**: Uses an 8MB buffered sliding window with overlap to scan massive 4K/8K multi-gigabyte recordings without Out-Of-Memory (OOM) crashes.
+- **Standalone GUI & CLI**: Includes both a high-performance native CLI (`dredge`) and a standalone graphical interface (`dredge_gui.py`).
 
 ---
 
-## 🖥️ Usage
+## 🖥️ Graphical Interface (GUI)
 
-### Using the Graphical User Interface (GUI)
-Simply double-click the compiled `rustore_mp4_gui.exe` (found in the `dist` folder after building). 
-1. **Analyze:** Select a "good", fully functional reference video from the same camera/settings. The program will generate `video.hdr` and `audio.hdr` structural files.
-2. **Recover:** Select your corrupted video file and an output directory. Click "Recover Streams" to extract the raw `.h264`/`.hevc` and audio streams.
-3. **Mux (Optional):** Use the interface to stitch the raw audio and video back into a playable MP4 or MOV file (requires `ffmpeg`).
+Run `python dredge_gui.py` (or launch the compiled `dredge_gui.exe`):
 
-### Command-Line Interface (CLI)
+1. **Step 1 — Analyze**: Select a working, healthy reference video recorded with the same camera and resolution settings. Click **Analyze Reference File** to generate `dredge-profile.toml`.
+2. **Step 2 — Recover**: Select your damaged/unfinalized video file and output destination. Click **Recover Media Streams** to extract elementary video (`.h264` / `.hevc`) and audio (`.aac` / `.wav` / `.mp3`) files.
+3. **Step 3 — Mux (Optional)**: Click **Mux into Playable MP4/MOV** to merge the recovered streams with FFmpeg.
 
-The underlying engine functions as a 1:1 drop-in replacement for the original tool. If you prefer the terminal, you can run the compiled `rustore_mp4.exe` manually.
+---
 
-**Phase 1: Analyze**
+## ⌨️ Command-Line Interface (CLI)
+
+### 1. Analyze Working Reference Video
 ```bash
-rustore_mp4 in_good_similar.mp4 --analyze
-```
-*(Generates `video.hdr` and `audio.hdr` in the current working directory).*
-
-**Phase 2: Recover**
-```bash
-rustore_mp4 in_corrupted.mp4 out_video.h264 out_audio.aac [options]
+dredge working.mp4 --analyze --out dredge-profile.toml
 ```
 
-**Common Flags:**
-- `--gopro4`: Use Ambarella templates and detect GoPro4 specific data.
-- `--qt`: Use QuickTime templates (default for MOV files).
-- `--hevc`: Use generic HEVC/H.265 templates.
-- `--ext`: Generic templates for OBS, smartphones, and miscellaneous cameras.
+### 2. Recover Damaged Recording
+```bash
+dredge broken.mp4 recovered.h264 recovered.aac --profile dredge-profile.toml
+```
+
+### 3. Mux Streams (with FFmpeg)
+```bash
+ffmpeg -r 30 -i recovered.h264 -i recovered.aac -c copy final_recovered.mp4
+```
+
+### Additional Options:
+- `--profile <file>`: Custom path to camera profile TOML file.
+- `--start <offset>`: Start byte offset to bypass corrupted file headers.
+- `--end <offset>`: End byte offset (0 = EOF).
+- `--verbose`: Enable detailed logging.
 
 ---
 
-## 📜 Credits & Background
-Built upon the reverse-engineering principles of the original closed-source `recover_mp4` utility (v1.92) by Dmitry Vasilyev. 
+## 🛠️ Building from Source
 
-**Special Acknowledgments:**
-A massive thank you to the open-source heroes who did the hard reverse-engineering work that makes our camera-specific parsing rules possible:
-- **Federico Ponchio** for creating the incredible [`untrunc`](https://github.com/ponchio/untrunc) tool, which provided the mathematical blueprint for parsing GoPro (`gpmd`, `fdsc`), Timecode (`tmcd`), and Camera Metadata (`camm`) chunks.
-- **anthwlock** for maintaining and expanding the highly successful [`untrunc` fork](https://github.com/anthwlock/untrunc) which served as the primary reference for maximizing camera compatibility.
+### Prerequisites
+- **Rust & Cargo** (stable 1.70+)
+- **Python 3.10+** (for GUI)
 
-The Rust implementation provides modern memory safety, incredible parsing speed, and true cross-platform compatibility, ensuring these critical archival and recovery techniques are preserved in an open, unified ecosystem.
+### Build the Rust Binary
+```powershell
+cargo build --release
+```
+The compiled binary will be placed at `target/release/dredge.exe`.
+
+### Run Automated Tests
+```powershell
+cargo test
+```
+
+---
+
+## 📜 Attribution & Lineage
+
+Dredge is an independent open-source media recovery tool inspired by the analysis workflows of `recover_mp4` (by Dmitry Vasilyev) and `untrunc` (by Federico Ponchio and anthwlock). Dredge is not affiliated with, endorsed by, or derived from the proprietary source code of those projects.
